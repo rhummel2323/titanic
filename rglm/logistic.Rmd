@@ -1,0 +1,63 @@
+---
+title: "Titanic Regression"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+rawdata <- read.csv("/cloud/project/train.csv", header = TRUE)
+mean_age <- mean(rawdata$Age, na.rm = TRUE)
+```
+
+Impute missing values for Age
+
+```{r}
+logistic_df <- rawdata %>% 
+  select(Survived,Pclass, Sex, Age) %>% 
+  mutate(Sex = as.factor(Sex), Pclass = as.factor(Pclass), Survived = as.factor(Survived)) %>% 
+  mutate(Age2 = ifelse(is.na(Age), mean_age, Age))
+```
+
+Train a logistic model
+
+```{r}
+model <- glm(Survived ~ Pclass + Sex + Age2, data = logistic_df, family = binomial)
+```
+
+Use the model to make predictions pos = Survived then add 
+1) predicted probabilites
+2) calculate predicted survival count
+3) logit log(p/(1-p))
+
+```{r}
+Prob = predict(model, type = "response")
+logistic_df <- cbind(logistic_df,Prob)
+logistic_df <- logistic_df %>% mutate(Predict = ifelse(Prob > 0.5, 1, 0))
+logistic_df <- logistic_df %>% mutate(logit = log(Prob/(1-Prob)))
+                              
+```
+
+Predicted
+```{r}
+table(logistic_df$Predict)
+```
+Actual
+
+```{r}
+table(logistic_df$Survived)
+```
+
+Plot the functional relationship between Age2 and the logit
+
+```{r}
+ggplot(logistic_df, aes(logit, Age2))+
+  geom_point(size = 0.5, alpha = 0.5) +
+  geom_smooth(method = "loess") + 
+  theme_bw()
+```
+

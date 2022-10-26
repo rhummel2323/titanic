@@ -1,0 +1,48 @@
+---
+title: "sSports Viz"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+```{r echo=FALSE}
+library(tidyverse)
+```
+
+```{r}
+es_raw <- read_csv(file="/cloud/project/esports/GeneralEsportData.csv")
+es_data <- es_raw %>% mutate(Genre = as.factor(Genre))
+```
+Let's see how skewed the distribution of Total Earnings is
+
+```{r}
+ggplot(data=es_data, aes(x=TotalEarnings)) + geom_histogram(bins=50)
+```
+Let's see how skewed the distribution of Total Earnings is
+
+```{r}
+ggplot(data=es_data, aes(x=TotalPlayers)) + geom_histogram(bins=50)
+```
+
+
+```{r}
+ggplot(data = es_data, aes(x=TotalPlayers,y=TotalEarnings, color=Genre)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+```{r}
+ggplot(data = es_data, aes(x=TotalPlayers,y=TotalEarnings, color=Genre)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(vars(Genre)) +
+  theme(legend.position = "bottom")
+```
+```{r}
+es_data %>% filter(TotalEarnings <= 200000000 && TotalPlayers<=10000) %>% 
+ggplot(., aes(x=TotalPlayers,y=TotalEarnings, color=Genre)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(vars(Genre)) +
+  theme(legend.position = "bottom")
+```
+

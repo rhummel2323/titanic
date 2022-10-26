@@ -1,0 +1,52 @@
+---
+title: "R Visualizations"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+# EDA for Kaggle Titanic Competition training dataset
+
+load libraries
+```{r}
+library(ggplot2)
+library(dplyr)
+library(forcats)
+```
+
+
+```{r}
+rawdata <- read.csv("/cloud/project/train.csv", header = TRUE)
+skimr::skim(rawdata)
+```
+
+Format categorical variables as factors
+
+```{r}
+rawdata <- rawdata %>% mutate(Sex = as.factor(Sex), Survived = as.factor(Survived), Pclass = as.factor(Pclass))
+```
+
+
+```{r}
+ggplot(data = rawdata, aes(x=Survived, y=Age)) + geom_boxplot()
+```
+
+Explore the % of passengers that survived by cabin class (1,2,3) and Gender (Male, Female)
+
+```{r}
+rawdata %>%
+group_by(Pclass, Sex) %>%
+summarize(n = n(),
+n_surv = sum(Survived == "1"),
+pct_surv = n_surv / n) %>%
+mutate(Pclass = fct_reorder(Pclass, pct_surv)) %>%
+ggplot(aes(pct_surv, Pclass, fill = Pclass, color = Pclass)) +
+geom_col(position = position_dodge()) +
+# scale_x_continuous(labels = percent) +
+labs(x = "% in category that survived", fill = NULL, color = NULL, y = NULL) +
+facet_wrap(~Sex)
+```
+Nearly all the females in first class cabins survived while less than 25% of men in thrid class survived.
+
